@@ -11,6 +11,9 @@
 زمستان ۱۴۰۰
 </p>
 
+اسلایدهای مربوط به این پروپوزال در
+[این لینک](https://docs.google.com/presentation/d/1GC8DirnFEurxau7_LiZFlntKh-j90mExHD0EmSQnUcM/edit?usp=sharing)
+قابل مشاهده است.
 
 ## طرح ساعت
 
