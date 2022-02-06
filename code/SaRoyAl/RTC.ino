@@ -3,10 +3,19 @@
 RTC_DS1307 rtc;
 
 bool isAlarm() {
-  DateTime noww = rtc.now();
-  return noww.hour() == RemoteXY.alarm_h &&
-       noww.minute() == RemoteXY.alarm_m &&
-       noww.second() <= 5;
+  updateTime();
+  return Prefrences.alarmH == noww.hour() &&
+         Prefrences.alarmM == noww.minute() &&
+         noww.second() < 5;
+}
+
+void updateTime() {
+  noww = rtc.now();
+}
+
+void adjustClock(uint8_t YYYY,uint8_t MM,uint8_t DD,
+                 uint8_t hh,uint8_t mm,uint8_t ss){
+  rtc.adjust(DateTime(YYYY, MM, DD, hh, mm, ss));
 }
 
 void initRTC(){
@@ -15,7 +24,7 @@ void initRTC(){
     Serial.flush();
     while (1) delay(10);
   }
-
+  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   if (! rtc.isrunning()) {
     Serial.println("RTC is NOT running, let's set the time!");
     // When time needs to be set on a new device, or after a power loss, the

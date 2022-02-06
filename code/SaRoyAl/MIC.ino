@@ -1,6 +1,5 @@
 #define MIC D3
 
-
 uint8_t numClap = 0; // keep number of claps for double clapping
 long firstClap;      // Time of the first clap
 

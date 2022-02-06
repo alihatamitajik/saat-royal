@@ -15,5 +15,6 @@ void initTEMP() {
 
 int8_t getTemprature() {
   // Returns the temprature in degree Celcius
+  tempSensor.requestTemperatures(); 
   return tempSensor.getTempCByIndex(0);
 }

@@ -2,148 +2,249 @@
    -- SaRoyAl --   
 */
 
-//////////////////////////////////////////////
-//        RemoteXY include library          //
-//////////////////////////////////////////////
-
-// RemoteXY select connection mode and include library 
-#define REMOTEXY_MODE__ESP8266WIFI_LIB_POINT
 #include <ESP8266WiFi.h>
-
-#include <RemoteXY.h>
-
-// RemoteXY connection settings 
-#define REMOTEXY_WIFI_SSID "SaRoyAl"
-#define REMOTEXY_WIFI_PASSWORD "12345678"
-#define REMOTEXY_SERVER_PORT 6377
-
-
-// RemoteXY configurate  
-#pragma pack(push, 1)
-uint8_t RemoteXY_CONF[] =
-  { 255,19,0,1,0,30,1,13,13,5,
-  131,1,1,2,20,4,1,2,31,83,
-  116,97,116,117,115,0,131,0,22,2,
-  24,4,2,2,31,77,111,100,117,108,
-  97,116,105,111,110,0,131,0,47,2,
-  14,4,3,2,31,67,111,108,111,114,
-  115,0,2,1,10,10,43,5,3,2,
-  26,31,31,82,97,110,100,111,109,0,
-  109,97,110,117,97,108,0,6,0,21,
-  21,20,20,3,2,26,6,0,21,46,
-  20,20,3,2,26,6,0,21,71,20,
-  20,3,2,26,66,130,19,22,23,18,
-  1,2,26,2,1,5,49,20,6,1,
-  2,26,31,31,79,78,0,79,70,70,
-  0,7,52,28,49,13,6,1,2,26,
-  2,7,52,42,49,13,6,1,2,26,
-  2,2,1,4,26,15,6,2,2,26,
-  31,31,79,78,0,79,70,70,0,129,
-  0,32,26,11,5,2,31,68,97,116,
-  101,0,3,131,4,13,22,8,2,2,
-  26,129,0,32,15,23,4,2,31,67,
-  108,111,99,107,32,77,111,100,101,0,
-  2,1,4,37,15,6,2,2,26,31,
-  31,79,78,0,79,70,70,0,129,0,
-  32,38,25,4,2,31,84,101,109,112,
-  101,114,97,116,117,114,101,32,0,2,
-  1,4,48,15,6,2,2,26,31,31,
-  79,78,0,79,70,70,0,129,0,32,
-  49,25,4,2,31,66,97,116,116,101,
-  114,121,0 };
-  
-// this structure defines all the variables and events of your control interface 
-struct {
-
-    // input variables
-  uint8_t isRandom; // =1 if switch ON and =0 if OFF 
-  uint8_t outer_r; // =0..255 Red color value 
-  uint8_t outer_g; // =0..255 Green color value 
-  uint8_t outer_b; // =0..255 Blue color value 
-  uint8_t mid_r; // =0..255 Red color value 
-  uint8_t mid_g; // =0..255 Green color value 
-  uint8_t mid_b; // =0..255 Blue color value 
-  uint8_t inner_r; // =0..255 Red color value 
-  uint8_t inner_g; // =0..255 Green color value 
-  uint8_t inner_b; // =0..255 Blue color value 
-  uint8_t isAlarm; // =1 if switch ON and =0 if OFF 
-  int16_t alarm_h;  // 32767.. +32767 
-  int16_t alarm_m;  // 32767.. +32767 
-  uint8_t isDate; // =1 if switch ON and =0 if OFF 
-  uint8_t clockMode; // =0 if select position A, =1 if position B, =2 if position C, ... 
-  uint8_t isTemp; // =1 if switch ON and =0 if OFF 
-  uint8_t isBattery; // =1 if switch ON and =0 if OFF 
-
-    // output variables
-  int8_t battery_level; // =0..100 level position 
-
-    // other variable
-  uint8_t connect_flag;  // =1 if wire connected, else =0 
-
-} RemoteXY;
-#pragma pack(pop)
-
-/////////////////////////////////////////////
-//           END RemoteXY include          //
-/////////////////////////////////////////////
+#include <string.h>
+#include <RTClib.h>
+#include <iostream>
+#include <string>
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 
 // Variables
-bool isTriggered = false;
+// State Variables for Operate
+uint8_t state = 0;
 bool isOperating = false;
+long lastCheckpoint;
+int32_t threshold = 1000;
+// Mic
+bool isTriggered = false;
+
+// Time
+DateTime noww;
+
+// To Be Used As Local Counters
+long startState;
+uint32_t i_loc;
+uint32_t j;
+uint32_t k;
+uint8_t var1;
+
+// Settings
+struct {
+  // Alaram
+  uint8_t alarmH;
+  uint8_t alarmM;
+  // Booleans
+  uint8_t isAlarm;
+  uint8_t isShowClock;
+  uint8_t isShowDate;
+  uint8_t isShowBattery;
+  uint8_t isTemprature;
+  uint8_t isShowRainbow;
+  uint8_t isShowPackman;
+  // Modes
+  uint8_t modeClock;  // 0: FF, 1: Swing, 2: Simple
+  uint8_t ffMode;
+  uint32_t color60;
+  uint32_t color24;
+  uint32_t color12;
+  uint32_t color12N;
+  uint8_t brightness;
+} Prefrences ={0,0,0,1,1,1,1,1,1,2,0,16711680,65280,255,25500, 50};
+
+
+AsyncWebServer server(80);
+
+
+const char* ssid = "ESP-SaRoyAl";          // Your WiFi SSID
+const char* password = "LaYorSa-PSE";  // Your WiFi Password
+
+void notFound(AsyncWebServerRequest *request) {
+    request->send(404, "text/plain", "Not found");
+}
+
+void handleGetSatus (AsyncWebServerRequest *request) {
+  updateTime();
+  char form[] = "DDD, DD MMM YYYY hh:mm:ss";
+  String stat;
+  stat += "{\"Current\":\"" +     String(noww.toString(form)) + "\",";
+  stat += "\"alarmM\":" +         String(Prefrences.alarmH) + ",";
+  stat += "\"alarmM\":" +         String(Prefrences.alarmM) + ",";
+  stat += "\"isAlarm\":" +        String(Prefrences.isAlarm) + ",";
+  stat += "\"isShowClock\":" +    String(Prefrences.isShowClock) + ",";
+  stat += "\"isShowDate\":" +     String(Prefrences.isShowDate) + ",";
+  stat += "\"isShowBattery\":" +  String(Prefrences.isShowBattery) + ",";
+  stat += "\"isTemprature\":" +   String(Prefrences.isTemprature) + ",";
+  stat += "\"isShowRainbow\":" +  String(Prefrences.isShowRainbow) + ",";
+  stat += "\"isShowPackman\":" +  String(Prefrences.isShowPackman) + ",";
+  stat += "\"modeClock\":" +      String(Prefrences.modeClock) + ",";
+  stat += "\"ffMode\":" +         String(Prefrences.ffMode) + ",";
+  stat += "\"color60\":" +        String(Prefrences.color60) + ",";
+  stat += "\"color24\":" +        String(Prefrences.color24) + ",";
+  stat += "\"color12\":" +        String(Prefrences.color12) + "}";
+  stat += "\"color12N\":" +       String(Prefrences.color12N) + "}";
+  stat += "\"brightness\":" +     String(Prefrences.brightness) + "}";
+  request->send(200, "application/json", stat);
+}
+
+void handlePostData(AsyncWebServerRequest *request){
+  String message;
+  bool found= false;
+  
+  if (request->hasParam("alarmH", true)) {
+      message = request->getParam("alarmH", true)->value();
+      Prefrences.alarmH = message.toInt();
+      found = true;
+  } 
+  
+  if (request->hasParam("alarmM", true)) {
+      message = request->getParam("alarmM", true)->value();
+      Prefrences.alarmM = message.toInt();
+      found = true;
+  }
+  
+  if (request->hasParam("isAlarm", true)) {
+      message = request->getParam("isAlarm", true)->value();
+      Prefrences.isAlarm = message.toInt();
+      found = true;
+  }
+  
+  if (request->hasParam("isShowClock", true)) {
+      message = request->getParam("isShowClock", true)->value();
+      Prefrences.isShowClock = message.toInt();
+      found = true;
+  }
+  
+  if (request->hasParam("isShowDate", true)) {
+      message = request->getParam("isShowDate", true)->value();
+      Prefrences.isShowDate = message.toInt();
+      found = true;
+  }
+  
+  if (request->hasParam("isShowBattery", true)) {
+      message = request->getParam("isShowBattery", true)->value();
+      Prefrences.isShowBattery = message.toInt();
+      found = true;
+  }
+  
+  if (request->hasParam("isShowRainbow", true)) {
+      message = request->getParam("isShowRainbow", true)->value();
+      Prefrences.isShowRainbow = message.toInt();
+      found = true;
+  }
+  
+  if (request->hasParam("isShowPackman", true)) {
+      message = request->getParam("isShowPackman", true)->value();
+      Prefrences.isShowPackman = message.toInt();
+      found = true;
+  }
+  
+  if (request->hasParam("modeClock", true)) {
+      message = request->getParam("modeClock", true)->value();
+      Prefrences.modeClock = message.toInt();
+      found = true;
+  }
+  
+  if (request->hasParam("color60", true)) {
+      message = request->getParam("color60", true)->value();
+      Prefrences.color60 = message.toInt();
+      found = true;
+  }
+  
+  if (request->hasParam("color24", true)) {
+      message = request->getParam("color24", true)->value();
+      Prefrences.color24 = message.toInt();
+      found = true;
+  }
+
+  if (request->hasParam("color12N", true)) {
+      message = request->getParam("color12N", true)->value();
+      Prefrences.color12N = message.toInt();
+      found = true;
+  }
+
+  if (request->hasParam("ffMode", true)) {
+      message = request->getParam("ffMode", true)->value();
+      Prefrences.ffMode = message.toInt();
+      found = true;
+  }
+  
+  if (request->hasParam("color12", true)) {
+      message = request->getParam("color12", true)->value();
+      Prefrences.color12 = message.toInt();
+      found = true;
+  }
+  if (found)
+    request->send(200, "text/plain", "OK");
+  else
+    request->send(400, "text/plain", "No Parameter Found");
+}
+
+void handleAdjustClock(AsyncWebServerRequest *request) {
+  bool valid = true;
+  uint8_t YYYY,MM,DD, hh,mm,ss; 
+  if (valid &= request->hasParam("YYYY", true)) 
+    YYYY = request->getParam("YYYY", true)->value().toInt();
+  if (valid &= request->hasParam("MM", true)) 
+    MM = request->getParam("MM", true)->value().toInt();
+  if (valid &= request->hasParam("DD", true)) 
+    DD = request->getParam("DD", true)->value().toInt();
+  if (valid &= request->hasParam("hh", true)) 
+    hh = request->getParam("hh", true)->value().toInt();
+  if (valid &= request->hasParam("mm", true)) 
+    mm = request->getParam("mm", true)->value().toInt();
+  if (valid &= request->hasParam("ss", true)) 
+    ss = request->getParam("ss", true)->value().toInt();
+
+  if (valid) {
+    request->send(200, "text/plain", "OK");
+    adjustClock(YYYY, MM, DD, hh, mm, ss);
+  } else
+    request->send(400, "text/plain", "Some Parameters Missing");
+}
+
+void initServer() {
+  WiFi.softAP(ssid, password);
+  IPAddress IP = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(IP); 
+  
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(200, "text/plain", "Sa@RoyAl Controller");
+  });
+
+  // Send a GET request to <IP>/get?message=<message>
+  server.on("/status", HTTP_GET, handleGetSatus);
+
+  // parameters are in the name of the Prefrences structure
+  server.on("/post", HTTP_POST, handlePostData);
+
+  server.on("/operate", [](AsyncWebServerRequest *request){
+        isTriggered = true;
+        request->send(200, "text/plain", "OK");
+  });
+
+  server.on("/adjust", HTTP_POST, handleAdjustClock);
+  server.onNotFound(notFound);
+
+  server.begin();
+}
 
 void setup() 
 {
-  RemoteXY_Init ();
-  initTEMP();
-  initStrip();
   Serial.begin(115200);
-
 #ifndef ESP8266
   while (!Serial); // wait for serial port to connect. Needed for native USB
 #endif
 
-  pinMode(D3,INPUT);
-  pinMode(D5,OUTPUT);
-  pinMode(D6,OUTPUT);
-  pinMode(D7,INPUT);
-  pinMode(A0,INPUT);
-
-}
-
-// Variables to check timer
-long lastCheckpoint;
-uint8_t threshold;
-
-// State Variables for Operate
-uint8_t state;
-
-void operate(){
-  // TODO
-  isOperating = false;
+  initRTC();
+  initTEMP();
+  initStrip();
+  turnOff();
+  initServer();
 }
 
 void loop() 
 { 
-  RemoteXY_Handler ();
-
-
-  // if we are not trigered and clock is not showing
-  // capture clap
-  if(!isTriggered && !isOperating){
-    checkTriger();
-  } else if (isTriggered){
-    // else if we are trigered call the operation once
-    // operation should 
-    testStrip();
-    isTriggered = false;
-    isOperating = true;
-    // Show data once, next calls should be done by timer
-    lastCheckpoint = millis();
-    threshold = 200;
-    state = 0;
-  } else if (isOperating) {
-    if (millis() - lastCheckpoint >  threshold){
-      operate();
-    }
-  }
+  operate();
 }
