@@ -221,6 +221,12 @@ void displayDate() {
       int pixelHue = i_loc + (index * 65536L / 24);
       strip.setPixelColor(map24(index), strip.gamma32(strip.ColorHSV(pixelHue)));
   }
+
+  for ( index =  0; index < date.day; index++ )
+    if( index % 5 == 0)
+      strip.setPixelColor(map60(index), strip.Color(32,40,40));
+
+      
   strip.show();
 
   threshold = 20;
@@ -242,6 +248,7 @@ void showAlarmClock(uint8_t h, uint8_t m) {
   
   strip.setPixelColor(map60(h), Prefrences.color60);
   strip.setPixelColor(map60(m), Prefrences.color24);
+  strip.show();
 }
 
 

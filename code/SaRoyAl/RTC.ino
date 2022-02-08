@@ -34,7 +34,6 @@ void initRTC(){
     Serial.flush();
     while (1) delay(10);
   }
-  rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   if (! rtc.isrunning()) {
     Serial.println("RTC is NOT running, let's set the time!");
     // When time needs to be set on a new device, or after a power loss, the
