@@ -227,7 +227,7 @@ void handlePostData(AsyncWebServerRequest *request){
       found = true;
   }
 
-  if (request->hasParam("isJalali;", true)) {
+  if (request->hasParam("isJalali", true)) {
       message = request->getParam("isJalali", true)->value();
       Prefrences.isJalali = message.toInt();
       found = true;
