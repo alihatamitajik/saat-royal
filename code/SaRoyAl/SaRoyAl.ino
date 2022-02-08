@@ -114,7 +114,7 @@ void handleGetSetting (AsyncWebServerRequest *request) {
  */
 void handleGetAlarm (AsyncWebServerRequest *request) {
   String stat;
-  stat += "{\"alarmM\":" +        String(Prefrences.alarmH) + ",";
+  stat += "{\"alarmH\":" +        String(Prefrences.alarmH) + ",";
   stat += "\"alarmM\":" +         String(Prefrences.alarmM) + ",";
   stat += "\"isAlarm\":" +        String(Prefrences.isAlarm) + "}";
   request->send(200, "application/json", stat);

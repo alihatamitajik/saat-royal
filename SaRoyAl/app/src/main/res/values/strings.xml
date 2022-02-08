@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">Sa@RoyAl</string>
+    <string name="connecting">Connecting</string>
+    <string name="time">Time</string>
+    <string name="date">Date</string>
+    <string name="jalali">Jalali</string>
+    <string name="georgian">Georgian</string>
+    <string name="packman">PackMan</string>
+    <string name="pacman">Pacman</string>
+    <string name="rainbow">Rainbow</string>
+    <string name="temperature">Temperature</string>
+    <string name="battery">Battery</string>
+    <string name="brightness">Brightness</string>
+    <string name="outer_ring_color">Outer Ring Color</string>
+    <string name="middle_ring_color">Middle Ring Color</string>
+    <string name="inner_ring_color">Inner Ring Color</string>
+    <string name="night_color">Night Color</string>
+    <string name="mode">Mode</string>
+    <string name="full_face">Full Face</string>
+    <string name="swing">Swing</string>
+    <string name="simple">Simple</string>
+    <string name="outer_mid_inner_night">Outer, Mid, Inner, Night</string>
+    <string name="full_face_clock">Full Face Clock</string>
+    <string name="day">Day</string>
+    <string name="full_face_mode">Full Face Mode</string>
+    <string name="off">Off</string>
+    <string name="colors">Colors</string>
+    <string name="alarm">Alarm</string>
+    <string name="setting">Setting</string>
+    <string name="sync">Sync</string>
+    <string name="adjust">Adjust</string>
+    <string name="error_wifi">Connect To WiFi First</string>
+</resources>
