@@ -18,3 +18,7 @@ int8_t getTemprature() {
   tempSensor.requestTemperatures(); 
   return tempSensor.getTempCByIndex(0);
 }
+
+void updateTemprature() {
+  temprature = getTemprature();
+}

@@ -15,9 +15,12 @@
 uint8_t state = 0;
 bool isOperating = false;
 long lastCheckpoint;
+long alarmCheck = millis();
 int32_t threshold = 1000;
 // Mic
 bool isTriggered = false;
+uint8_t batteryPercent;
+int8_t temprature;
 
 // Time
 DateTime noww;
@@ -28,6 +31,10 @@ uint32_t i_loc;
 uint32_t j;
 uint32_t k;
 uint8_t var1;
+
+bool shouldLog = false;
+int8_t log_temprature;
+uint8_t log_battery;
 
 // Settings
 struct {
@@ -49,8 +56,9 @@ struct {
   uint32_t color24;
   uint32_t color12;
   uint32_t color12N;
-  uint8_t brightness;
-} Prefrences ={0,0,0,1,1,1,1,1,1,2,0,16711680,65280,255,25500, 50};
+  uint8_t  brightness;
+  uint8_t isJalali;
+} Prefrences ={0,0,0,1,1,1,1,1,1,2,0,16711680,65280,255,25500, 50, 0};
 
 
 AsyncWebServer server(80);
@@ -63,26 +71,63 @@ void notFound(AsyncWebServerRequest *request) {
     request->send(404, "text/plain", "Not found");
 }
 
+/**
+ * This function is to prepare battery percentage and temprature for
+ * Status request. Prepration is time taking and cause problem for sending
+ * requests so they should be prepared beforehand.
+ */
+void handleGetReady (AsyncWebServerRequest *request) {
+  request->send(200, "text/plain", "WAIT 2000ms ...");
+  shouldLog= true;
+}
+
+/**
+ * Send status of the clock to the app on 192.168.4.1/status
+ */
 void handleGetSatus (AsyncWebServerRequest *request) {
   updateTime();
   char form[] = "DDD, DD MMM YYYY hh:mm:ss";
   String stat;
   stat += "{\"Current\":\"" +     String(noww.toString(form)) + "\",";
-  stat += "\"alarmM\":" +         String(Prefrences.alarmH) + ",";
-  stat += "\"alarmM\":" +         String(Prefrences.alarmM) + ",";
-  stat += "\"isAlarm\":" +        String(Prefrences.isAlarm) + ",";
-  stat += "\"isShowClock\":" +    String(Prefrences.isShowClock) + ",";
+  stat += "\"temprature\":" +     String(log_temprature) + ",";
+  stat += "\"battery\":" +        String(log_battery) + "}";
+  request->send(200, "application/json", stat);
+}
+
+/**
+ * send settings to switches on 192.168.4.1/setting
+ */
+void handleGetSetting (AsyncWebServerRequest *request) {
+  String stat;
+  stat += "{\"isShowClock\":" +   String(Prefrences.isShowClock) + ",";
   stat += "\"isShowDate\":" +     String(Prefrences.isShowDate) + ",";
   stat += "\"isShowBattery\":" +  String(Prefrences.isShowBattery) + ",";
   stat += "\"isTemprature\":" +   String(Prefrences.isTemprature) + ",";
   stat += "\"isShowRainbow\":" +  String(Prefrences.isShowRainbow) + ",";
   stat += "\"isShowPackman\":" +  String(Prefrences.isShowPackman) + ",";
-  stat += "\"modeClock\":" +      String(Prefrences.modeClock) + ",";
+  stat += "\"isJalali\":" +       String(Prefrences.isJalali) + "}";
+  request->send(200, "application/json", stat);
+}
+
+/*
+ * Alarm settings on 192.168.4.1/alarm
+ */
+void handleGetAlarm (AsyncWebServerRequest *request) {
+  String stat;
+  stat += "{\"alarmM\":" +        String(Prefrences.alarmH) + ",";
+  stat += "\"alarmM\":" +         String(Prefrences.alarmM) + ",";
+  stat += "\"isAlarm\":" +        String(Prefrences.isAlarm) + "}";
+  request->send(200, "application/json", stat);
+}
+
+void handleGetColors (AsyncWebServerRequest *request) {
+  String stat;
+  stat += "{\"modeClock\":" +     String(Prefrences.modeClock) + ",";
   stat += "\"ffMode\":" +         String(Prefrences.ffMode) + ",";
   stat += "\"color60\":" +        String(Prefrences.color60) + ",";
   stat += "\"color24\":" +        String(Prefrences.color24) + ",";
-  stat += "\"color12\":" +        String(Prefrences.color12) + "}";
-  stat += "\"color12N\":" +       String(Prefrences.color12N) + "}";
+  stat += "\"color12\":" +        String(Prefrences.color12) + ",";
+  stat += "\"color12N\":" +       String(Prefrences.color12N) + ",";
   stat += "\"brightness\":" +     String(Prefrences.brightness) + "}";
   request->send(200, "application/json", stat);
 }
@@ -174,6 +219,26 @@ void handlePostData(AsyncWebServerRequest *request){
       Prefrences.color12 = message.toInt();
       found = true;
   }
+
+  if (request->hasParam("brightness", true)) {
+      message = request->getParam("brightness", true)->value();
+      Prefrences.brightness = message.toInt();
+      setBrightnessStrip();
+      found = true;
+  }
+
+  if (request->hasParam("isJalali;", true)) {
+      message = request->getParam("isJalali", true)->value();
+      Prefrences.isJalali = message.toInt();
+      found = true;
+  }
+
+  if (request->hasParam("isTemprature", true)) {
+      message = request->getParam("isTemprature", true)->value();
+      Prefrences.isTemprature = message.toInt();
+      found = true;
+  }
+  
   if (found)
     request->send(200, "text/plain", "OK");
   else
@@ -213,9 +278,12 @@ void initServer() {
         request->send(200, "text/plain", "Sa@RoyAl Controller");
   });
 
-  // Send a GET request to <IP>/get?message=<message>
+  server.on("/ready", HTTP_GET, handleGetReady);
   server.on("/status", HTTP_GET, handleGetSatus);
-
+  server.on("/setting", HTTP_GET, handleGetSetting);
+  server.on("/alarm", HTTP_GET, handleGetAlarm);
+  server.on("/colors", HTTP_GET, handleGetColors);
+  
   // parameters are in the name of the Prefrences structure
   server.on("/post", HTTP_POST, handlePostData);
 

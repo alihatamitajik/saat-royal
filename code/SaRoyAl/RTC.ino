@@ -9,6 +9,16 @@ bool isAlarm() {
          noww.second() < 5;
 }
 
+void handleAlarm() {
+  if (isAlarm()) {
+    Serial.println("Playing Song");
+    showAlarmClock(Prefrences.alarmH, Prefrences.alarmM);
+    playmelodyMario();
+    turnOff();
+    isOperating = false;
+  }
+}
+
 void updateTime() {
   noww = rtc.now();
 }

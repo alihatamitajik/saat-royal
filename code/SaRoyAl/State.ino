@@ -23,11 +23,10 @@ void goNextState() {
     case S_BATRY      : if(Prefrences.isTemprature)   {state = S_TEMP_INIT; break;}
     case S_TEMP_INIT  : if(Prefrences.isTemprature)   {state = S_TEMP; break;}
     case S_TEMP       : if(Prefrences.isShowRainbow)  {state = S_RAINB_INIT; break;}
-    case S_RAINB_INIT : if(Prefrences.isTemprature)   {state = S_RAINB; break;}
-    case S_RAINB      : if(Prefrences.isShowRainbow)  {state = S_PACKM_INIT; break;}
-    case S_PACKM_INIT : if(Prefrences.isShowRainbow)  {state = S_PACKM; break;}
-    case S_PACKM      : if(Prefrences.isShowPackman)  {state = S_IDLE; break;}
-    case S_IDLE       : if(Prefrences.isShowPackman)  {state = S_CLOCK_INIT; break;}
+    case S_RAINB_INIT : if(Prefrences.isShowRainbow)  {state = S_RAINB; break;}
+    case S_RAINB      : if(Prefrences.isShowPackman)  {state = S_PACKM_INIT; break;}
+    case S_PACKM_INIT : if(Prefrences.isShowPackman)  {state = S_PACKM; break;}
+    case S_PACKM      : state = S_IDLE; break;
     default:
       state = S_CLOCK_INIT; break;
   }
@@ -35,14 +34,18 @@ void goNextState() {
 
 
 void operate() {
+  if (shouldLog) {
+    log_temprature = getTemprature();
+    log_battery = getBatteryPercentage();
+    shouldLog = false;
+  }
   // if we are not trigered and clock is not showing
   // capture clap
   if(!isTriggered && !isOperating){
     checkTriger();
   } else if (isTriggered){
     // else if we are trigered call the operation once
-    // operation should 
-    Serial.println("Trigerred");    
+    // operation should     
     isTriggered = false;
     isOperating = true;
     // Show data once, next calls should be done by timer
@@ -55,6 +58,11 @@ void operate() {
       handleStates();
     }
   }
+
+  if (millis() - alarmCheck > 1000) {
+    alarmCheck = millis();
+    handleAlarm();
+  }
 }
 
 void handleStates() {
@@ -65,19 +73,19 @@ void handleStates() {
    * the controller to go for the next state;
    */
   switch(state) {
+    case S_TEMP_INIT  : updateTemprature();
     case S_RAINB_INIT :
-    case S_BATRY_INIT :
+    case S_BATRY_INIT : updateBatteryPercentage();
     case S_DATE_INIT  :
     case S_PACKM_INIT : 
-    case S_TEMP_INIT  :
-    case S_CLOCK_INIT : i_loc = 0; goNextState(); startState = millis(); break;
-    case S_CLOCK      : displayTime(); break;
+    case S_CLOCK_INIT : turnOff(); i_loc = 0; j=0; k=1; goNextState(); startState = millis(); break;
+    case S_CLOCK      : updateTime(); displayTime(); break;
     case S_DATE       : displayDate(); break;
-    case S_BATRY      : if(Prefrences.isTemprature)   {state = S_TEMP_INIT; break;}
-    case S_TEMP       : if(Prefrences.isShowRainbow)  {state = S_RAINB_INIT; break;}
-    case S_RAINB      : if(Prefrences.isShowRainbow)  {state = S_PACKM_INIT; break;}
-    case S_PACKM      : if(Prefrences.isShowPackman)  {state = S_IDLE; break;}
-    case S_IDLE       : if(Prefrences.isShowPackman)  {state = S_CLOCK_INIT; isOperating = false; turnOff(); break;}
+    case S_BATRY      : displayPercentage(); break;
+    case S_TEMP       : displayTemprature(); break;
+    case S_RAINB      : displayRainbow(); break;
+    case S_PACKM      : displayPackman(); break;
+    case S_IDLE       : state = S_CLOCK_INIT; turnOff(); isOperating = false;
     default:
       state = S_CLOCK_INIT; break;
   }
