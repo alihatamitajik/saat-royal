@@ -30,4 +30,5 @@
     <string name="sync">Sync</string>
     <string name="adjust">Adjust</string>
     <string name="error_wifi">Connect To WiFi First</string>
+    <string name="outer">Outer</string>
 </resources>

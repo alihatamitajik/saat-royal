@@ -21,7 +21,7 @@ public class HandlePost extends AsyncTask {
                 .addFormDataPart((String) objects[0],(String) objects[1])
                 .build();
         Request request = new Request.Builder()
-                .url("192.168.4.1/post")
+                .url("http://192.168.4.1/post")
                 .method("POST", body)
                 .build();
         try {

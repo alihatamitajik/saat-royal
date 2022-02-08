@@ -7,6 +7,8 @@ import androidx.cardview.widget.CardView;
 import androidx.lifecycle.MutableLiveData;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.transition.Slide;
@@ -269,20 +271,20 @@ public class MainActivity extends AppCompatActivity {
                 TextView ffmode = findViewById(R.id.FFMode);
                 ffmode.setText(getFFMode(colorEntity.ffMode));
 
-                Button color60 = findViewById(R.id.color60);
-                color60.setBackgroundColor(colorEntity.color60);
+                TextView color60 = findViewById(R.id.color60);
+                color60.setTextColor(0xff000000 +colorEntity.color60);
+
+                TextView color24 = findViewById(R.id.color24);
+                color24.setTextColor(0xff000000 +colorEntity.color24);
 
 
-                Button color24 = findViewById(R.id.color24);
-                color24.setBackgroundColor(colorEntity.color24);
+                TextView color12 = findViewById(R.id.color12);
+                color12.setTextColor(0xff000000 +colorEntity.color12);;
 
 
-                Button color12 = findViewById(R.id.color12);
-                color12.setBackgroundColor(colorEntity.color12);
+                TextView color12N = findViewById(R.id.color12N);
+                color12N.setTextColor(0xff000000 +colorEntity.color12N);
 
-
-                Button color12N = findViewById(R.id.color12N);
-                color12N.setBackgroundColor(colorEntity.color12N);
 
                 Slider br = findViewById(R.id.brightness);
                 br.setValue(colorEntity.brightness);
