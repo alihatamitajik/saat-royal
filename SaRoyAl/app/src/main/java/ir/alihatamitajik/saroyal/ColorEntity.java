@@ -3,11 +3,11 @@ package ir.alihatamitajik.saroyal;
 public class ColorEntity {
     int modeClock;
     int ffMode;
-    int color60;
-    int color24;
-    int color12;
-    int color12N;
-    int brightness;
+    long color60;
+    long color24;
+    long color12;
+    long color12N;
+    long brightness;
 
     public int getModeClock() {
         return modeClock;
@@ -25,43 +25,43 @@ public class ColorEntity {
         this.ffMode = ffMode;
     }
 
-    public int getColor60() {
+    public long getColor60() {
         return color60;
     }
 
-    public void setColor60(int color60) {
+    public void setColor60(long color60) {
         this.color60 = color60;
     }
 
-    public int getColor24() {
+    public long getColor24() {
         return color24;
     }
 
-    public void setColor24(int color24) {
+    public void setColor24(long color24) {
         this.color24 = color24;
     }
 
-    public int getColor12() {
+    public long getColor12() {
         return color12;
     }
 
-    public void setColor12(int color12) {
+    public void setColor12(long color12) {
         this.color12 = color12;
     }
 
-    public int getColor12N() {
+    public long getColor12N() {
         return color12N;
     }
 
-    public void setColor12N(int color12N) {
+    public void setColor12N(long color12N) {
         this.color12N = color12N;
     }
 
-    public int getBrightness() {
+    public long getBrightness() {
         return brightness;
     }
 
-    public void setBrightness(int brightness) {
+    public void setBrightness(long brightness) {
         this.brightness = brightness;
     }
 }

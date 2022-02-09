@@ -9,211 +9,264 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         >
-        <GridLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:alignmentMode="alignMargins"
-            android:columnCount="2"
-            android:columnOrderPreserved="false"
-            app:layout_constraintVertical_bias="0"
-            android:rowCount="4"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <GridLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_rowWeight="1"
-                android:layout_columnWeight="1"
-                android:layout_margin="12dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="6dp">
+                android:alignmentMode="alignMargins"
+                android:columnCount="2"
+                android:columnOrderPreserved="false"
+                app:layout_constraintVertical_bias="0"
+                android:rowCount="4"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="start"
-                    android:padding="16dp">
-
-
-                    <TextView
-                        android:id="@+id/clkMode"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/full_face_clock"
-                        android:textSize="18sp"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/mode"/>
-
-                </LinearLayout>
-
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_rowWeight="1"
-                android:layout_columnWeight="1"
-                android:layout_margin="12dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="6dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                <androidx.cardview.widget.CardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="12dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="6dp">
 
                     <LinearLayout
+                        android:orientation="vertical"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center">
-                        <TextView
-                            android:id="@+id/color60"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:text="Out"
-                            android:textColor="@color/gray"/>
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
 
                         <TextView
-                            android:id="@+id/color24"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:layout_marginStart="5dp"
-                            android:text="Mid"
-                            android:textColor="@color/gray"/>
+                            android:id="@+id/clkMode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/full_face_clock"
+                            android:textSize="18sp"/>
 
                         <TextView
-                            android:id="@+id/color12"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:layout_marginStart="5dp"
-                            android:text="Inn"
-                            android:textColor="@color/gray"/>
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/mode"/>
 
-                        <TextView
-                            android:id="@+id/color12N"
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:layout_marginStart="5dp"
-                            android:text="Nit"
-                            android:textColor="@color/gray"/>
                     </LinearLayout>
 
-                </LinearLayout>
 
-            </androidx.cardview.widget.CardView>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="12dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="6dp">
+
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="start"
+                        android:padding="16dp">
+
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/brightness"
+                            android:stepSize="10"
+                            android:valueFrom="20"
+                            app:labelBehavior="floating"
+                            android:valueTo="100"
+                            android:value="50"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:thumbColor="#03A9F4"
+                            app:trackColorActive="#03A9F4"
+                            app:trackColorInactive="#9AD7F3"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/brightness"/>
+
+                    </LinearLayout>
+
+
+
+                </androidx.cardview.widget.CardView>
+
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/FFModeCard"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_rowWeight="1"
+                    android:layout_columnWeight="1"
+                    android:layout_margin="12dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="6dp"
+                    android:visibility="visible">
+
+                    <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center_vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/FFMode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/day"
+                            android:textSize="18sp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/full_face_mode"/>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+            </GridLayout>
+
+
 
             <androidx.cardview.widget.CardView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_rowWeight="1"
-                android:layout_columnWeight="1"
                 android:layout_margin="12dp"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="6dp">
-
                 <LinearLayout
-                    android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="start"
-                    android:padding="16dp">
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                <LinearLayout
+                    android:padding="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
                     <com.google.android.material.slider.Slider
-                        android:id="@+id/brightness"
-                        android:stepSize="10"
-                        android:valueFrom="20"
-                        app:labelBehavior="floating"
-                        android:valueTo="100"
+                        android:id="@+id/selectR"
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        app:labelBehavior="gone"
+                        app:trackColorActive="#F00"
+                        app:thumbColor="#F00"
+                        android:valueFrom="0"
+                        android:valueTo="255"
                         android:value="50"
-                        android:layout_width="match_parent"
+                        />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/selectG"
+                        android:layout_width="150dp"
                         android:layout_height="wrap_content"
-                        app:thumbColor="#03A9F4"
-                        app:trackColorActive="#03A9F4"
-                        app:trackColorInactive="#9AD7F3"/>
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                        app:labelBehavior="gone"
+                        app:trackColorActive="#0F0"
+                        app:thumbColor="#0F0"
+                        android:valueFrom="0"
+                        android:valueTo="255"
+                        android:value="50"
+                        />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/selectB"
+                        android:layout_width="150dp"
                         android:layout_height="wrap_content"
-                        android:text="@string/brightness"/>
-
-                </LinearLayout>
-
-
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/FFModeCard"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_rowWeight="1"
-                android:layout_columnWeight="1"
-                android:layout_margin="12dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="6dp"
-                android:visibility="visible">
-
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:id="@+id/FFMode"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/day"
-                        android:textSize="18sp"/>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/full_face_mode"/>
-
-                </LinearLayout>
-
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_rowWeight="1"
-                android:layout_columnWeight="1"
-                android:layout_margin="12dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="6dp"
-                android:visibility="visible">
-
-                <LinearLayout
-                    android:orientation="vertical"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:padding="16dp">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/color"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        app:trackColorActive="#00F"
+                        app:labelBehavior="gone"
+                        app:thumbColor="#00F"
+                        android:valueFrom="0"
+                        android:valueTo="255"
+                        android:value="50"
                         />
                 </LinearLayout>
 
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <View
+                            android:id="@+id/colorSelect"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:background="@drawable/circle"/>
+
+                        <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <Button
+                            android:id="@+id/color60"
+                            android:layout_width="70dp"
+                            android:layout_height="wrap_content"
+                            android:text="60"
+                            android:backgroundTint="@color/white"
+                            android:elevation="20dp"
+                            android:textColor="@color/gray"/>
+
+                        <Button
+                            android:id="@+id/color24"
+                            android:layout_width="70dp"
+                            android:backgroundTint="@color/white"
+                            android:elevation="20dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:text="24"
+                            android:textColor="@color/gray"/>
+                    </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <Button
+                                android:id="@+id/color12"
+                                android:layout_width="70dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:backgroundTint="@color/white"
+                                android:elevation="20dp"
+                                android:text="12"
+                                android:textColor="@color/gray"/>
+
+                            <Button
+                                android:id="@+id/color12N"
+                                android:layout_width="70dp"
+                                android:backgroundTint="@color/white"
+                                android:elevation="20dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="5dp"
+                                android:text="12N"
+                                android:textColor="@color/gray"/>
+                        </LinearLayout>
+
+
+                    </LinearLayout>
+                </LinearLayout>
+
+
 
             </androidx.cardview.widget.CardView>
-        </GridLayout>
+        </LinearLayout>
+
+
+
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

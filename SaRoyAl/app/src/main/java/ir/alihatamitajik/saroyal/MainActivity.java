@@ -25,9 +25,14 @@ import com.google.gson.Gson;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Locale;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
@@ -44,6 +49,17 @@ public class MainActivity extends AppCompatActivity {
 
     CircularProgressIndicator temperaturePercentage;
     TextView temperatureText;
+
+    public static double mapOneRangeToAnother(double sourceNumber, double fromA, double fromB, double toA, double toB, int decimalPrecision ) {
+        double deltaA = fromB - fromA;
+        double deltaB = toB - toA;
+        double scale  = deltaB / deltaA;
+        double negA   = -1 * fromA;
+        double offset = (negA * scale) + toA;
+        double finalNumber = (sourceNumber * scale) + offset;
+        int calcScale = (int) Math.pow(10, decimalPrecision);
+        return (double) Math.round(finalNumber * calcScale) / calcScale;
+    }
 
     TextView status;
 
@@ -92,6 +108,48 @@ public class MainActivity extends AppCompatActivity {
 
         sync.setOnClickListener(view -> new SyncHandler().execute());
         operate.setOnClickListener(view -> new OperateHandler().execute());
+
+        adjust.setOnClickListener(view -> {
+            final Calendar cldr = Calendar.getInstance();
+            int hh = cldr.get(Calendar.HOUR_OF_DAY);
+            int mm = cldr.get(Calendar.SECOND);
+            int ss = cldr.get(Calendar.MINUTE);
+            int YYYY = cldr.get(Calendar.YEAR);
+            int MM = cldr.get(Calendar.MONTH);
+            int DD = cldr.get(Calendar.DAY_OF_MONTH);
+
+            new AdjustHandler().execute("YYYY",String.valueOf(YYYY-48),
+                    "MM",String.valueOf(MM+1),
+                    "DD",String.valueOf(DD),
+                    "hh",String.valueOf(hh),
+                    "mm",String.valueOf(mm),
+                    "ss",String.valueOf(ss));
+        });
+    }
+
+    public class AdjustHandler extends AsyncTask<String, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(String[] objects) {
+            OkHttpClient client = new OkHttpClient().newBuilder()
+                    .build();
+            MediaType mediaType = MediaType.parse("text/plain");
+            MultipartBody.Builder bodyBuilder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+            for (int i = 0; i < objects.length/2; i+=1) {
+                bodyBuilder.addFormDataPart(objects[2*i],objects[2*i+1]);
+            }
+            RequestBody body = bodyBuilder.build();
+            Request request = new Request.Builder()
+                    .url("http://192.168.4.1/adjust")
+                    .method("POST", body)
+                    .build();
+            try {
+                Response response = client.newCall(request).execute();
+                return response.code() == 200;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
     }
 
     public class OperateHandler extends AsyncTask {
@@ -149,7 +207,12 @@ public class MainActivity extends AppCompatActivity {
                 status.setText(entity.Current);
                 temperaturePercentage.setProgress((entity.temprature + 40) * 100 / 80);
                 temperatureText.setText(entity.temprature + "°");
-                batteryPercentage.setIndicatorColor(HSVToColor (new float[]{(240-(entity.temprature + 40)*3), 1.0F, 1.0F}));
+                batteryPercentage.setIndicatorColor(HSVToColor (
+                        new float[]{(float) (120 - mapOneRangeToAnother(entity.temprature, -80,
+                                80,0,120,
+                                2))
+                                , 1.0F, 1.0F}
+                        ));
             });
         }
 
@@ -235,7 +298,14 @@ public class MainActivity extends AppCompatActivity {
         void updateAlarmFields(AlarmEntity entity) {
             runOnUiThread(() -> {
                 Switch isAlarm = findViewById(R.id.isAlarm);
-                isAlarm.setChecked(entity.isAlarm==1);
+                if (entity.isAlarm == 1) {
+                    isAlarm.setChecked(true);
+                    isAlarm.setText(R.string.on);
+                } else {
+                    isAlarm.setChecked(false);
+                    isAlarm.setText(R.string.off);
+                }
+
                 TextView alarm = findViewById(R.id.alarmTime);
                 alarm.setText(String.format("%02d:%02d",entity.alarmH ,entity.alarmM));
             });
@@ -271,19 +341,19 @@ public class MainActivity extends AppCompatActivity {
                 TextView ffmode = findViewById(R.id.FFMode);
                 ffmode.setText(getFFMode(colorEntity.ffMode));
 
-                TextView color60 = findViewById(R.id.color60);
-                color60.setTextColor(0xff000000 +colorEntity.color60);
+                Button color60 = findViewById(R.id.color60);
+                color60.setTextColor(0xff000000 +(int) colorEntity.color60);
 
-                TextView color24 = findViewById(R.id.color24);
-                color24.setTextColor(0xff000000 +colorEntity.color24);
-
-
-                TextView color12 = findViewById(R.id.color12);
-                color12.setTextColor(0xff000000 +colorEntity.color12);;
+                Button color24 = findViewById(R.id.color24);
+                color24.setTextColor(0xff000000 +(int) colorEntity.color24);
 
 
-                TextView color12N = findViewById(R.id.color12N);
-                color12N.setTextColor(0xff000000 +colorEntity.color12N);
+                Button color12 = findViewById(R.id.color12);
+                color12.setTextColor(0xff000000 +(int) colorEntity.color12);;
+
+
+                Button color12N = findViewById(R.id.color12N);
+                color12N.setTextColor(0xff000000 +(int) colorEntity.color12N);
 
 
                 Slider br = findViewById(R.id.brightness);
@@ -320,11 +390,11 @@ public class MainActivity extends AppCompatActivity {
                             case 1: updateColors(); break;
                             case 2: updateAlarm(); break;
                         }
-//                        updateAlarm();
                     }
                 }
-            } catch (Exception ignore) {
-                status.setText(R.string.error_wifi);
+            } catch (Exception e) {
+//                status.setText(R.string.error_wifi);
+                e.printStackTrace();
             }
             return null;
         }

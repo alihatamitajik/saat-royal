@@ -11,24 +11,31 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class HandlePost extends AsyncTask {
+
+public abstract class HandlePost extends AsyncTask<String, String, Boolean> {
     @Override
-    protected Object doInBackground(Object[] objects) {
+    protected Boolean doInBackground(String[] objects) {
         OkHttpClient client = new OkHttpClient().newBuilder()
                 .build();
         MediaType mediaType = MediaType.parse("text/plain");
-        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM)
-                .addFormDataPart((String) objects[0],(String) objects[1])
-                .build();
+        MultipartBody.Builder bodyBuilder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+        for (int i = 0; i < objects.length/2; i+=1) {
+            bodyBuilder.addFormDataPart(objects[2*i],objects[2*i+1]);
+        }
+        RequestBody body = bodyBuilder.build();
         Request request = new Request.Builder()
                 .url("http://192.168.4.1/post")
                 .method("POST", body)
                 .build();
         try {
             Response response = client.newCall(request).execute();
+            return response.code() == 200;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
-        return null;
     }
+
+    @Override
+    abstract public void onPostExecute(Boolean status);
 }
